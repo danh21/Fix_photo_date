@@ -72,8 +72,9 @@ The application scans JPG/JPEG files in the selected folder. It currently recogn
 ```text
 YYYYMMDD_HHMMSS
 YYYYMMDD-HHMMSS
+FB_IMG_<UNIX_TIMESTAMP_MS>
 ```
 
-Each filename format is handled by a separate parser in `src/filename_dates.py`, so additional formats can be added independently.
+For example, `FB_IMG_1488170740397.jpg` contains a Unix timestamp in milliseconds and resolves to February 27, 2017 at 04:45:40.397 UTC. The application displays and writes this timestamp using the computer's local timezone. Each filename format is handled by a separate parser in `src/filename_dates.py`, so additional formats can be added independently.
 
 ## 🔗 Reference

@@ -24,6 +24,12 @@ class FilenameDateParserTests(unittest.TestCase):
             datetime(2023, 4, 22, 10, 34, 46),
         )
 
+    def test_parses_facebook_unix_milliseconds_format(self):
+        self.assertEqual(
+            parse_filename_datetime("FB_IMG_1488170740397.jpg"),
+            datetime.fromtimestamp(1488170740397 / 1000),
+        )
+
     def test_rejects_invalid_calendar_date(self):
         self.assertIsNone(parse_filename_datetime("IMG_UPLOAD_20230230_103446.jpg"))
 
@@ -32,6 +38,9 @@ class FilenameDateParserTests(unittest.TestCase):
 
     def test_rejects_timestamp_embedded_in_longer_number(self):
         self.assertIsNone(parse_filename_datetime("120230422_1034467.jpg"))
+
+    def test_rejects_millisecond_timestamp_with_wrong_length(self):
+        self.assertIsNone(parse_filename_datetime("FB_IMG_148817074039.jpg"))
 
 
 if __name__ == "__main__":
