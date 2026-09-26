@@ -39,11 +39,25 @@ def _parse_unix_milliseconds(filename: str) -> datetime | None:
     except (OverflowError, OSError, ValueError):
         return None
 
+# e.g. received_1638770899781207.jpeg is a 16-digit Unix timestamp in microseconds.
+def _parse_received_unix_microseconds(filename: str) -> datetime | None:
+    """Parse received_<16-digit Unix microseconds> photo filenames."""
+    match = re.search(r"received_(\d{16})(?!\d)", filename, re.IGNORECASE)
+    if match is None:
+        return None
+
+    try:
+        timestamp_seconds = int(match.group(1)) / 1_000_000
+        return datetime.fromtimestamp(timestamp_seconds)
+    except (OverflowError, OSError, ValueError):
+        return None
+
 
 # Add new filename format parsers here without changing existing handlers.
 FILENAME_DATE_PARSERS: tuple[FilenameDateParser, ...] = (
     _parse_compact_date_time,
     _parse_unix_milliseconds,
+    _parse_received_unix_microseconds,
 )
 
 

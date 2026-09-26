@@ -30,6 +30,12 @@ class FilenameDateParserTests(unittest.TestCase):
             datetime.fromtimestamp(1488170740397 / 1000),
         )
 
+    def test_parses_received_unix_microseconds_format(self):
+        self.assertEqual(
+            parse_filename_datetime("received_1638770899781207.jpeg"),
+            datetime.fromtimestamp(1638770899781207 / 1_000_000),
+        )
+
     def test_rejects_invalid_calendar_date(self):
         self.assertIsNone(parse_filename_datetime("IMG_UPLOAD_20230230_103446.jpg"))
 

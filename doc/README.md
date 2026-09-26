@@ -29,6 +29,7 @@ The tool currently supports JPEG files with timestamps in these filename formats
 YYYYMMDD_HHMMSS
 YYYYMMDD-HHMMSS
 FB_IMG_<UNIX_TIMESTAMP_MS>
+received_<UNIX_TIMESTAMP_US>
 ```
 
-For example, `IMG_UPLOAD_20230422_103446.jpg` sets the photo date to `2023-04-22 10:34:46`. A filename such as `FB_IMG_1488170740397.jpg` uses a Unix timestamp in milliseconds; it is converted to the computer's local timezone before being written. The date is written to the common EXIF date fields and the file's access and modified timestamps.
+For example, `IMG_UPLOAD_20230422_103446.jpg` sets the photo date to `2023-04-22 10:34:46`. A filename such as `FB_IMG_1488170740397.jpg` uses a Unix timestamp in milliseconds. A filename such as `received_1638770899781207.jpeg` uses a Unix timestamp in microseconds and corresponds to `2021-12-06 06:08:19.781207 UTC`. Unix timestamps are converted to the computer's local timezone before being written. The date is written to the common EXIF date fields and the file's access and modified timestamps.
