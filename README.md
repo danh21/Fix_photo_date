@@ -15,6 +15,7 @@
 
 Fix Photo Date is a desktop application for updating JPEG photo dates from timestamps in their filenames.
 
+- Includes a manual mode for setting the same date and time on all JPG/JPEG images directly inside a selected folder, without relying on filenames.
 - Writes the date to the EXIF `DateTime`, `DateTimeOriginal`, and `DateTimeDigitized` fields.
 - Updates the file's modified and access timestamps.
 - Creates an optional `.bak` backup before changing each image.
@@ -28,10 +29,12 @@ For example, `IMG_UPLOAD_20230422_103446.jpg` is interpreted as April 22, 2023 a
 .
 ├── src/
 │   ├── filename_dates.py       # Filename timestamp parsers
+│   ├── manual_datetime.py      # Parser for manually entered date and time
 │   ├── main.py                 # Tkinter application and workflow
 │   └── photo_metadata.py       # JPEG EXIF and filesystem date updates
 ├── test/
-│   └── test_filename_dates.py  # Filename parser unit tests
+│   ├── test_filename_dates.py  # Filename parser unit tests
+│   └── test_manual_datetime.py # Manual date-time input tests
 ├── doc/                        # Additional documentation
 ├── rsc/                        # Project resources
 └── README.md
@@ -77,5 +80,7 @@ received_<UNIX_TIMESTAMP_US>
 ```
 
 For example, `FB_IMG_1488170740397.jpg` contains a Unix timestamp in milliseconds and `received_1638770899781207.jpeg` contains a Unix timestamp in microseconds. The latter resolves to December 6, 2021 at 06:08:19.781207 UTC. The application displays and writes these timestamps using the computer's local timezone. Each filename format is handled by a separate parser in `src/filename_dates.py`, so additional formats can be added independently.
+
+To set a date manually, open the **Sửa thủ công** (Manual Edit) tab, choose a folder, and enter the desired local date and time as `YYYY-MM-DD HH:MM:SS`. Click **Sửa tất cả ảnh trong thư mục** and confirm. The shared backup and Dry run options also apply. Only JPG/JPEG files directly inside the selected folder are processed; subfolders are not scanned.
 
 ## 🔗 Reference

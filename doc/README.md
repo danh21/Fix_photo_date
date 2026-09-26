@@ -23,6 +23,16 @@ AFTER:
 6. When ready to make changes, turn Dry run off and click **Sửa tất cả** (Fix All). Review the confirmation dialog and continue to update the photos.
 7. Check the activity log for successful updates or errors. Click **Mở thư mục** (Open Folder) to open the selected folder in the file manager.
 
+#### Set the Same Date for a Folder of Photos
+
+1. Open the **Sửa thủ công** (Manual Edit) tab.
+2. Click **Chọn thư mục...** (Choose Folder) and select the folder containing the photos, or enter its path directly.
+3. Enter the desired local date and time in `YYYY-MM-DD HH:MM:SS` format, for example `2016-05-14 13:45:00`.
+4. Check the shared backup and Dry run options at the top of the window. Dry run previews how many images will be changed without modifying files.
+5. Click **Sửa tất cả ảnh trong thư mục** (Fix All Photos in Folder), review the confirmation, and proceed. The same date is written to the EXIF date fields and filesystem timestamps of each JPG/JPEG directly in the selected folder. Subfolders are not scanned.
+![alt text](manual.png)
+6. Check the activity log and completion message for per-image errors and the total number of successful updates.
+
 The tool currently supports JPEG files with timestamps in these filename formats:
 
 ```text

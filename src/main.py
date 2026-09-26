@@ -1,12 +1,14 @@
-import os
 """Provide the Tkinter interface for scanning and updating photo dates."""
 
+import os
 import shutil
+import sys
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 try:
     from filename_dates import parse_filename_datetime
+    from manual_datetime import parse_manual_datetime
     from photo_metadata import set_photo_datetime
 except ImportError:
     raise SystemExit(
@@ -22,29 +24,36 @@ class App:
         root.minsize(760, 500)
 
         self.folder = tk.StringVar()
+        self.manual_folder_path = tk.StringVar()
+        self.manual_datetime = tk.StringVar()
         self.backup = tk.BooleanVar(value=True)
         self.dry_run = tk.BooleanVar(value=False)
 
-        top = ttk.Frame(root, padding=12)
-        top.pack(fill="x")
+        options = ttk.Frame(root, padding=(12, 12, 12, 8))
+        options.pack(fill="x")
+        ttk.Checkbutton(options, text="Tạo backup (.bak) trước khi sửa", variable=self.backup).pack(side="left")
+        ttk.Checkbutton(options, text="Dry run (chỉ xem, không sửa)", variable=self.dry_run).pack(side="left", padx=20)
 
-        ttk.Label(top, text="Thư mục ảnh:").grid(row=0, column=0, sticky="w")
-        ttk.Entry(top, textvariable=self.folder).grid(row=0, column=1, sticky="ew", padx=8)
-        ttk.Button(top, text="Chọn...", command=self.choose_folder).grid(row=0, column=2)
-        top.columnconfigure(1, weight=1)
+        notebook = ttk.Notebook(root)
+        notebook.pack(fill="both", expand=True, padx=12)
 
-        opts = ttk.Frame(root, padding=(12, 0, 12, 8))
-        opts.pack(fill="x")
-        ttk.Checkbutton(opts, text="Tạo backup (.bak) trước khi sửa", variable=self.backup).pack(side="left")
-        ttk.Checkbutton(opts, text="Dry run (chỉ xem, không sửa)", variable=self.dry_run).pack(side="left", padx=20)
+        bulk_tab = ttk.Frame(notebook, padding=12)
+        notebook.add(bulk_tab, text="Sửa hàng loạt")
 
-        btns = ttk.Frame(root, padding=(12, 0, 12, 8))
-        btns.pack(fill="x")
-        ttk.Button(btns, text="Quét ảnh", command=self.scan).pack(side="left")
-        ttk.Button(btns, text="Sửa tất cả", command=self.fix_all).pack(side="left", padx=8)
-        ttk.Button(btns, text="Mở thư mục", command=self.open_folder).pack(side="left")
+        folder_row = ttk.Frame(bulk_tab)
+        folder_row.pack(fill="x", pady=(0, 8))
+        ttk.Label(folder_row, text="Thư mục ảnh:").grid(row=0, column=0, sticky="w")
+        ttk.Entry(folder_row, textvariable=self.folder).grid(row=0, column=1, sticky="ew", padx=8)
+        ttk.Button(folder_row, text="Chọn...", command=self.choose_folder).grid(row=0, column=2)
+        folder_row.columnconfigure(1, weight=1)
 
-        self.tree = ttk.Treeview(root, columns=("file", "old", "new", "status"), show="headings")
+        bulk_buttons = ttk.Frame(bulk_tab)
+        bulk_buttons.pack(fill="x", pady=(0, 8))
+        ttk.Button(bulk_buttons, text="Quét ảnh", command=self.scan).pack(side="left")
+        ttk.Button(bulk_buttons, text="Sửa tất cả", command=self.fix_all).pack(side="left", padx=8)
+        ttk.Button(bulk_buttons, text="Mở thư mục", command=self.open_folder).pack(side="left")
+
+        self.tree = ttk.Treeview(bulk_tab, columns=("file", "old", "new", "status"), show="headings")
         self.tree.heading("file", text="Tên file")
         self.tree.heading("old", text="Ngày hiện tại (tên/EXIF)")
         self.tree.heading("new", text="Ngày sẽ đặt")
@@ -53,7 +62,39 @@ class App:
         self.tree.column("old", width=180)
         self.tree.column("new", width=180)
         self.tree.column("status", width=130)
-        self.tree.pack(fill="both", expand=True, padx=12, pady=(0, 8))
+        self.tree.pack(fill="both", expand=True)
+
+        manual_tab = ttk.Frame(notebook, padding=16)
+        notebook.add(manual_tab, text="Sửa thủ công")
+
+        ttk.Label(manual_tab, text="Chọn thư mục JPEG và nhập ngày giờ muốn đặt cho tất cả ảnh trong thư mục.").pack(
+            anchor="w", pady=(0, 12)
+        )
+
+        manual_folder_row = ttk.Frame(manual_tab)
+        manual_folder_row.pack(fill="x", pady=(0, 12))
+        ttk.Label(manual_folder_row, text="Thư mục ảnh:", width=18).grid(row=0, column=0, sticky="w")
+        ttk.Entry(manual_folder_row, textvariable=self.manual_folder_path).grid(
+            row=0, column=1, sticky="ew", padx=8
+        )
+        ttk.Button(manual_folder_row, text="Chọn thư mục...", command=self.choose_manual_folder).grid(
+            row=0, column=2
+        )
+        manual_folder_row.columnconfigure(1, weight=1)
+
+        datetime_row = ttk.Frame(manual_tab)
+        datetime_row.pack(fill="x", pady=(0, 12))
+        ttk.Label(datetime_row, text="Ngày giờ:", width=18).grid(row=0, column=0, sticky="w")
+        ttk.Entry(datetime_row, textvariable=self.manual_datetime, width=24).grid(
+            row=0, column=1, sticky="w", padx=8
+        )
+        ttk.Label(datetime_row, text="Định dạng: YYYY-MM-DD HH:MM:SS").grid(
+            row=0, column=2, sticky="w"
+        )
+
+        ttk.Button(manual_tab, text="Sửa tất cả ảnh trong thư mục", command=self.fix_manual_folder).pack(
+            anchor="w"
+        )
 
         self.log = tk.Text(root, height=7)
         self.log.pack(fill="x", padx=12, pady=(0, 12))
@@ -70,6 +111,73 @@ class App:
         if folder:
             self.folder.set(folder)
             self.scan()
+
+    def choose_manual_folder(self):
+        folder_path = filedialog.askdirectory(title="Chọn thư mục ảnh")
+        if folder_path:
+            self.manual_folder_path.set(folder_path)
+
+    def fix_manual_folder(self):
+        folder_path = self.manual_folder_path.get().strip()
+        if not folder_path or not os.path.isdir(folder_path):
+            messagebox.showwarning("Thiếu thư mục", "Hãy chọn một thư mục hợp lệ.")
+            return
+
+        image_paths = [
+            os.path.join(folder_path, name)
+            for name in sorted(os.listdir(folder_path), key=str.lower)
+            if name.lower().endswith((".jpg", ".jpeg"))
+            and os.path.isfile(os.path.join(folder_path, name))
+        ]
+        if not image_paths:
+            messagebox.showinfo("Không có ảnh", "Thư mục không có ảnh JPG/JPEG.")
+            return
+
+        try:
+            photo_datetime = parse_manual_datetime(self.manual_datetime.get())
+        except ValueError:
+            messagebox.showwarning(
+                "Ngày giờ không hợp lệ",
+                "Nhập ngày giờ theo định dạng YYYY-MM-DD HH:MM:SS.",
+            )
+            return
+
+        display_datetime = photo_datetime.strftime("%Y-%m-%d %H:%M:%S")
+        if self.dry_run.get():
+            self.write_log(
+                f"DRY RUN {len(image_paths)} ảnh trong {folder_path} -> {display_datetime}"
+            )
+            messagebox.showinfo(
+                "Dry run",
+                f"{len(image_paths)} ảnh sẽ được đặt ngày giờ {display_datetime}.\n"
+                "Chưa có file nào thay đổi.",
+            )
+            return
+
+        backup_message = "Backup sẽ được tạo trước khi sửa." if self.backup.get() else "Không tạo backup."
+        if not messagebox.askyesno(
+            "Xác nhận sửa ảnh trong thư mục",
+            f"Sẽ đặt ngày giờ {display_datetime} cho {len(image_paths)} ảnh trong thư mục:\n"
+            f"{folder_path}\n\n"
+            f"{backup_message}\n\nTiếp tục?",
+        ):
+            return
+
+        success = 0
+        failed = 0
+        for image_path in image_paths:
+            try:
+                if self.backup.get():
+                    shutil.copy2(image_path, image_path + ".bak")
+                set_photo_datetime(image_path, photo_datetime)
+                success += 1
+                self.write_log(f"OK  {os.path.basename(image_path)} -> {display_datetime}")
+            except Exception as error:
+                failed += 1
+                self.write_log(f"ERR {os.path.basename(image_path)}: {error}")
+
+        self.write_log(f"Sửa thủ công hoàn tất: {success} OK, {failed} lỗi.")
+        messagebox.showinfo("Hoàn tất", f"Đã sửa {success} ảnh.\nLỗi: {failed}")
 
     def open_folder(self):
         folder = self.folder.get()
@@ -163,7 +271,6 @@ class App:
 
 
 if __name__ == "__main__":
-    import sys
     root = tk.Tk()
     App(root)
     root.mainloop()
