@@ -36,6 +36,14 @@ class FilenameDateParserTests(unittest.TestCase):
             datetime.fromtimestamp(1638770899781207 / 1_000_000),
         )
 
+    def test_parses_android_screenshot_millisecond_format(self):
+        self.assertEqual(
+            parse_filename_datetime(
+                "Screenshot_2026-07-24-12-02-19-849_com.google.android.apps.docs.jpg"
+            ),
+            datetime(2026, 7, 24, 12, 2, 19, 849000),
+        )
+
     def test_rejects_invalid_calendar_date(self):
         self.assertIsNone(parse_filename_datetime("IMG_UPLOAD_20230230_103446.jpg"))
 

@@ -52,12 +52,30 @@ def _parse_received_unix_microseconds(filename: str) -> datetime | None:
     except (OverflowError, OSError, ValueError):
         return None
 
+# e.g. Screenshot_2026-07-24-12-02-19-849_com.google.android.apps.docs.jpg
+def _parse_screenshot_datetime(filename: str) -> datetime | None:
+    """Parse Android Screenshot filenames with millisecond timestamps."""
+    match = re.search(
+        r"Screenshot_(\d{4})-(\d{2})-(\d{2})-(\d{2})-(\d{2})-(\d{2})-(\d{3})(?!\d)",
+        filename,
+        re.IGNORECASE,
+    )
+    if match is None:
+        return None
+
+    try:
+        year, month, day, hour, minute, second, millisecond = map(int, match.groups())
+        return datetime(year, month, day, hour, minute, second, millisecond * 1000)
+    except ValueError:
+        return None
+
 
 # Add new filename format parsers here without changing existing handlers.
 FILENAME_DATE_PARSERS: tuple[FilenameDateParser, ...] = (
     _parse_compact_date_time,
     _parse_unix_milliseconds,
     _parse_received_unix_microseconds,
+    _parse_screenshot_datetime,
 )
 
 
