@@ -1,4 +1,4 @@
-"""Update JPEG EXIF date fields and filesystem timestamps."""
+"""Update JPEG/MP4 date metadata and filesystem timestamps."""
 
 import os
 from datetime import datetime
@@ -13,8 +13,20 @@ except ImportError as error:
     ) from error
 
 
-def set_photo_datetime(path: str, photo_datetime: datetime) -> None:
-    """Set common JPEG EXIF date fields and filesystem timestamps."""
+def _set_mp4_datetime(path: str, photo_datetime: datetime) -> None:
+    """Write an MP4 QuickTime date tag."""
+    try:
+        from mutagen.mp4 import MP4
+    except ImportError as error:
+        raise RuntimeError("MP4 support requires Mutagen. Run: pip install mutagen") from error
+
+    video = MP4(path)
+    video["©day"] = [photo_datetime.strftime("%Y-%m-%dT%H:%M:%S")]
+    video.save()
+
+
+def _set_jpeg_datetime(path: str, photo_datetime: datetime) -> None:
+    """Write common JPEG EXIF date fields."""
     exif_datetime = photo_datetime.strftime("%Y:%m:%d %H:%M:%S").encode("ascii")
 
     with Image.open(path) as image:
@@ -45,6 +57,17 @@ def set_photo_datetime(path: str, photo_datetime: datetime) -> None:
 
         updated_exif = piexif.dump(exif_data)
         image.save(path, "jpeg", exif=updated_exif, quality="keep")
+
+
+def set_photo_datetime(path: str, photo_datetime: datetime) -> None:
+    """Set JPEG EXIF or MP4 date metadata and filesystem timestamps."""
+    extension = os.path.splitext(path)[1].lower()
+    if extension == ".mp4":
+        _set_mp4_datetime(path, photo_datetime)
+    elif extension in (".jpg", ".jpeg"):
+        _set_jpeg_datetime(path, photo_datetime)
+    else:
+        raise ValueError("Only JPEG/JPG and MP4 are supported")
 
     timestamp = photo_datetime.timestamp()
     os.utime(path, (timestamp, timestamp))

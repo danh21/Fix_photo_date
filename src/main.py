@@ -13,7 +13,7 @@ try:
 except ImportError:
     raise SystemExit(
         "Missing libraries. Run:\n"
-        "pip install Pillow piexif"
+        "pip install Pillow piexif mutagen"
     )
 
 class App:
@@ -126,11 +126,11 @@ class App:
         image_paths = [
             os.path.join(folder_path, name)
             for name in sorted(os.listdir(folder_path), key=str.lower)
-            if name.lower().endswith((".jpg", ".jpeg"))
+            if name.lower().endswith((".jpg", ".jpeg", ".mp4"))
             and os.path.isfile(os.path.join(folder_path, name))
         ]
         if not image_paths:
-            messagebox.showinfo("Không có ảnh", "Thư mục không có ảnh JPG/JPEG.")
+            messagebox.showinfo("Không có file", "Thư mục không có file JPG/JPEG/MP4.")
             return
 
         try:
@@ -204,7 +204,7 @@ class App:
 
         files = sorted(os.listdir(folder), key=str.lower)
         for name in files:
-            if not name.lower().endswith((".jpg", ".jpeg")):
+            if not name.lower().endswith((".jpg", ".jpeg", ".mp4")):
                 continue
 
             dt = parse_filename_datetime(name)
