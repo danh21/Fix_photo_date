@@ -35,6 +35,14 @@ def set_photo_datetime(path: str, photo_datetime: datetime) -> None:
         exif_data["Exif"][piexif.ExifIFD.DateTimeOriginal] = exif_datetime
         exif_data["Exif"][piexif.ExifIFD.DateTimeDigitized] = exif_datetime
 
+        scene_type_tag = piexif.ExifIFD.SceneType
+        scene_type = exif_data["Exif"].get(scene_type_tag)
+        if isinstance(scene_type, int):
+            if 0 <= scene_type <= 255:
+                exif_data["Exif"][scene_type_tag] = bytes((scene_type,))
+            else:
+                del exif_data["Exif"][scene_type_tag]
+
         updated_exif = piexif.dump(exif_data)
         image.save(path, "jpeg", exif=updated_exif, quality="keep")
 
