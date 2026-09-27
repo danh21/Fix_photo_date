@@ -1,0 +1,45 @@
+### Interface
+
+![alt text](app.png)
+
+### Demo
+Filename mentions timestamp of 2017, but modified time is 2026
+
+BEFORE:
+
+![alt text](before.png)
+
+AFTER:
+
+![alt text](after.png)
+
+### Usage Guide
+
+1. Start the application and click **Chọn...** (Select) to choose the folder containing the photos and videos. Selecting a folder automatically scans it.
+2. Alternatively, enter or select a folder and click **Quét ảnh** (Scan Photos) to refresh the file list.
+3. Review the list. JPG/JPEG and MP4 files with a recognized timestamp show **Sẵn sàng** (Ready) and the date that will be applied. Other files show **Không nhận dạng** (Not recognized) and are not included in the update.
+4. Keep **Tạo backup (.bak) trước khi sửa** (Create backup before editing) enabled to save a copy of each media file before it is changed. The backup is created next to the original file.
+5. Enable **Dry run (chỉ xem, không sửa)** (Preview only, do not edit) to confirm how many recognized files would be updated without changing them.
+6. When ready to make changes, turn Dry run off and click **Sửa tất cả** (Fix All). Review the confirmation dialog and continue to update the files.
+7. Check the activity log for successful updates or errors. Click **Mở thư mục** (Open Folder) to open the selected folder in the file manager.
+
+#### Set the Same Date for a Folder of Media
+
+1. Open the **Sửa thủ công** (Manual Edit) tab.
+2. Click **Chọn thư mục...** (Choose Folder) and select the folder containing the photos and videos, or enter its path directly.
+3. Enter the desired local date and time in `YYYY-MM-DD HH:MM:SS` format, for example `2016-05-14 13:45:00`.
+4. Check the shared backup and Dry run options at the top of the window. Dry run previews how many files will be changed without modifying them.
+5. Click **Sửa tất cả ảnh trong thư mục** (Fix All Photos in Folder), review the confirmation, and proceed. The date is written to the EXIF date fields for JPG/JPEG, the `©day` metadata tag for MP4, and filesystem timestamps. Only files directly in the selected folder are processed; subfolders are not scanned.
+![alt text](manual.png)
+6. Check the activity log and completion message for per-image errors and the total number of successful updates.
+
+The tool currently supports JPG/JPEG and MP4 files with timestamps in these filename formats:
+
+```text
+YYYYMMDD_HHMMSS
+YYYYMMDD-HHMMSS
+FB_IMG_<UNIX_TIMESTAMP_MS>
+received_<UNIX_TIMESTAMP_US>
+```
+
+For example, `IMG_UPLOAD_20230422_103446.jpg` sets the media date to `2023-04-22 10:34:46`. A filename such as `FB_IMG_1488170740397.mp4` uses a Unix timestamp in milliseconds. A filename such as `received_1638770899781207.jpeg` uses a Unix timestamp in microseconds and corresponds to `2021-12-06 06:08:19.781207 UTC`. Unix timestamps are converted to the computer's local timezone before being written. The date is written to JPEG EXIF fields or the MP4 `©day` tag, and to the file's access and modified timestamps.
